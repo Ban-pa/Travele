@@ -1,0 +1,87 @@
+{
+  "tripId": "9f2c7a1e-0000-4000-8000-000000000001",
+  "status": "completed",
+  "title": "云南大理 3 日慢游",
+  "planMeta": {
+    "validated": true,
+    "issues": [],
+    "sourceDocs": ["大理-攻略-v2.md"]
+  },
+  "destination": { "province": "云南", "city": "大理" },
+  "budget": { "totalEstimate": 4200, "currency": "CNY", "estimate": true },
+  "days": [
+    {
+      "dayIndex": 1,
+      "date": "2025-08-01",
+      "theme": "洱海环游",
+      "segments": [
+        {
+          "slot": "morning",
+          "slotLabel": "上午",
+          "items": [
+            {
+              "seq": 1,
+              "activityType": "poi",
+              "options": [
+                {
+                  "poi": {
+                    "poiId": "poi-dali-001",
+                    "name": "洱海生态廊道",
+                    "poiType": "自然",
+                    "rating": 4.7,
+                    "address": "大理市洱海西岸",
+                    "lat": 25.7,
+                    "lng": 100.2,
+                    "seasonBest": "四季皆宜"
+                  },
+                  "durationMin": 180,
+                  "transportOptions": [
+                    {
+                      "method": "taxi",
+                      "durationMin": 20,
+                      "price": 25,
+                      "recommended": true
+                    },
+                    {
+                      "method": "bike",
+                      "durationMin": 45,
+                      "price": 3,
+                      "recommended": false
+                    }
+                  ],
+                  "combinationPoi": {
+                    "poiId": "poi-dali-002",
+                    "name": "大理州博物馆",
+                    "poiType": "人文",
+                    "rating": 4.2,
+                    "lat": 25.68,
+                    "lng": 100.19
+                  }
+                },
+                {
+                  "poi": {
+                    "poiId": "poi-dali-003",
+                    "name": "才村码头",
+                    "poiType": "自然",
+                    "rating": 4.5,
+                    "lat": 25.75,
+                    "lng": 100.22
+                  },
+                  "durationMin": 120,
+                  "transportOptions": []
+                }
+              ],
+              "timeRange": { "start": "09:00", "end": "12:00" },
+              "unverified": [],
+              "sourceRef": { "doc": "大理-攻略-v2.md", "chunkIndex": 12 },
+              "locked": false
+            }
+          ]
+        },
+        { "slot": "afternoon", "slotLabel": "下午", "items": [] },
+        { "slot": "evening", "slotLabel": "晚上", "items": [] }
+      ]
+    }
+  ],
+  "createdAt": "2025-08-01T10:00:00+08:00"
+}

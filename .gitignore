@@ -1,0 +1,38 @@
+# ---- 密钥与本地配置：绝不进仓库 ----
+# .env 存的是模型 key 与各数据源 key；模板是 Travele/.env.example（那个才进仓库）
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.*
+
+# ---- 依赖与虚拟环境 ----
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# ---- 编辑器 / 系统 ----
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ---- 运行产物（可重新生成，别进仓库）----
+# 本地嵌入模型 183MB：按 README 的说明下载到 Travele/ingest/model/bge-small-zh-v1.5
+Travele/ingest/model/
+# 向量库与去重台账：跑一次入库即可生成
+Travele/ingest/chroma_db/
+Travele/ingest/md5.text
+# 长期记忆（含用户确认过的行程）
+Travele/sqlite_data/*.db
+Travele/sqlite_data/*.db-journal
+
+# ---- 临时文件 ----
+.tmp*/
+*.log
+*~

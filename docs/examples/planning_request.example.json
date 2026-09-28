@@ -1,0 +1,19 @@
+{
+  "mode": "explicit",
+  "schedule": { "tripStart": "2025-08-01", "tripEnd": "2025-08-03" },
+  "user": {
+    "adults": 2,
+    "children": 1,
+    "departureCity": "杭州",
+    "budgetTier": "mid"
+  },
+  "destination": {
+    "province": "云南",
+    "city": "大理",
+    "centerPlace": null,
+    "mustVisit": ["洱海"]
+  },
+  "isSelfDriving": false,
+  "prefs": { "themes": ["自然", "美食"], "avoid": ["购物"] },
+  "remarks": "带老人，节奏放慢"
+}
