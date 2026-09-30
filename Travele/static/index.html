@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Travele · 把世界贴进我的本子里</title>
+
+<!-- 一个入口：样式 = Tailwind（CDN，无构建）+ app.css（手账质感与动效），脚本一份 app.js，四个视图共用。
+     ⚠️ ?v= 是**缓存版本号**：改了 app.css / app.js 就把版本号往上加一位，
+     否则浏览器（和用户已经打开着的那个页面）会继续用缓存里的老文件，改了也看不到。
+     后端那边还给静态文件加了 Cache-Control: no-cache（每次都会回来问一句），双保险。 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+// Tailwind 只管布局和配色；纸张纹理、胶带、宝丽来、印章、旧地图这些"质感"全在 app.css。
+// 配色：牛皮纸黄 kraft / 墨绿 moss / 砖红 brick / 褪色蓝 faded
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        kraft: { 50: "#fbf6ea", 100: "#f6ecd6", 200: "#eddfc0", 300: "#e0caa0", 400: "#cfae7b", 500: "#bb9257" },
+        moss:  { 400: "#5d7a5f", 500: "#45604a", 600: "#3a5140", 700: "#2c3f33", 800: "#1f2d24" },
+        brick: { 300: "#d08a72", 400: "#c06a4f", 500: "#a84e35", 600: "#8d3f2b", 700: "#6f3222" },
+        faded: { 300: "#a8bccd", 400: "#87a0b6", 500: "#68839c", 600: "#4f6a82" },
+        ink:   { 400: "#6b6152", 500: "#544c40", 600: "#3f3931", 700: "#2e2a24" },
+      },
+      fontFamily: {
+        hand:  ['"Ma Shan Zheng"', "cursive"],
+        title: ['"ZCOOL XiaoWei"', "serif"],
+        body:  ['"Noto Serif SC"', "serif"],
+      },
+    },
+  },
+};
+</script>
+<link rel="stylesheet" href="app.css?v=3">
+</head>
+<body class="desk font-body text-ink-700 antialiased">
+
+<div class="notebook">
+  <span class="spine" aria-hidden="true"></span>
+
+  <!-- ==================== 手账抬头 + 索引标签 ==================== -->
+  <header class="relative px-5 pt-9 sm:px-10">
+    <span class="tape tape-a" aria-hidden="true"></span>
+    <span class="tape tape-b" aria-hidden="true"></span>
+
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="brand-mark"><i data-lucide="compass" class="ico"></i></span>
+        <span>
+          <b class="block font-title text-2xl leading-none tracking-wide text-moss-700">Travele</b>
+          <small class="block font-body text-[12px] tracking-[0.3em] text-ink-400">旧地图旅行手账</small>
+        </span>
+      </div>
+      <span class="stamp stamp-quiet rotate-[-7deg]">攻略库 22 篇</span>
+    </div>
+
+    <nav class="tabs mt-8 flex flex-wrap items-end gap-1 sm:gap-2" id="tabs">
+      <button type="button" class="tab" data-view="home">
+        <i data-lucide="book-open" class="ico"></i><span>首页</span>
+      </button>
+      <button type="button" class="tab" data-view="discover">
+        <i data-lucide="map" class="ico"></i><span>目的地</span>
+      </button>
+      <button type="button" class="tab" data-view="plan">
+        <i data-lucide="route" class="ico"></i><span>路线</span>
+      </button>
+      <button type="button" class="tab" data-view="history">
+        <i data-lucide="notebook-pen" class="ico"></i><span>手记</span>
+      </button>
+    </nav>
+  </header>
+
+  <!-- ==================== 内容区 ==================== -->
+  <main class="px-5 pb-10 pt-6 sm:px-10">
+
+    <!-- ============ 视图一：首页（手账封面） ============ -->
+    <section class="view" id="view-home">
+      <div class="cover reveal">
+        <p class="kicker">Travele · 旧地图旅行手账</p>
+        <h1 class="cover-title">把世界贴进我的本子里</h1>
+        <p class="cover-sub">
+          21 座城市、36 个目的地带着坐标与常游时长；离线攻略库里躺着 22 篇旅行攻略。<br>
+          说一句想去哪、几天、和谁一起 —— 后端备好事实（天气、酒店、车次、路书），AI 把它排成一页手账。
+        </p>
+        <div class="actions justify-center">
+          <button type="button" class="btn btn-primary" id="coverDiscover">
+            <i data-lucide="images" class="ico"></i>翻开照片墙
+          </button>
+          <button type="button" class="btn" id="coverPlan">
+            <i data-lucide="pencil-line" class="ico"></i>直接开始排行程
+          </button>
+        </div>
+      </div>
+
+      <div class="wall mt-8" id="coverWall"><p class="dim small">正在贴照片…</p></div>
+
+      <section class="mt-10 reveal" aria-labelledby="homeRecentTitle">
+        <h2 class="section-title" id="homeRecentTitle"><i data-lucide="calendar-heart" class="ico"></i>最近的手记</h2>
+        <div id="homeRecent"><p class="dim small">正在翻本子…</p></div>
+      </section>
+
+      <section class="mt-10 reveal" aria-labelledby="homeStepsTitle">
+        <h2 class="section-title" id="homeStepsTitle"><i data-lucide="list-checks" class="ico"></i>这本手账怎么用</h2>
+        <ol class="note-list">
+          <li><span>①</span>翻一眼照片墙，或者直接填需求</li>
+          <li><span>②</span>生成后可以就地换地点、换交通（不发请求）</li>
+          <li><span>③</span>确认之后，AI 把各点介绍与出行建议写进手记</li>
+        </ol>
+      </section>
+    </section>
+
+    <!-- ============ 视图二：目的地（随机发现 + 照片墙） ============ -->
+    <section class="view" id="view-discover" hidden>
+      <div class="page-head reveal">
+        <h1 class="page-title">目的地</h1>
+        <p class="sub">一次看一个地方，不喜欢就换；一轮看完自动重洗，不重复。照片墙上的都可以直接拿去排行程。</p>
+      </div>
+
+      <article class="polaroid polaroid-hero reveal" id="randomCard">
+        <div class="photo" id="visual">
+          <span class="photo-eyebrow" id="place"></span>
+        </div>
+        <div class="polaroid-caption">
+          <h2 class="photo-name" id="spotName"></h2>
+          <p class="photo-desc" id="spotDesc"></p>
+          <div class="counter" id="counter"></div>
+        </div>
+      </article>
+
+      <div class="actions reveal">
+        <button type="button" class="btn btn-primary" id="pickBtn">
+          <i data-lucide="pin" class="ico"></i>就它了，去填需求
+        </button>
+        <button type="button" class="btn" id="nextBtn">
+          <i data-lucide="shuffle" class="ico"></i>换一个
+        </button>
+        <button type="button" class="btn btn-quiet ml-auto" id="goPlanBtn">
+          已经想好去哪了 <i data-lucide="arrow-right" class="ico"></i>
+        </button>
+      </div>
+
+      <div class="notice bad" id="spotsError" hidden></div>
+
+      <section class="mt-10 reveal" aria-labelledby="wallTitle">
+        <h2 class="section-title" id="wallTitle"><i data-lucide="images" class="ico"></i>照片墙 · 全部目的地</h2>
+        <p class="sub mb-4">点任意一张，省市会自动填进路线那页的表单。</p>
+        <div class="wall" id="spotWall"><p class="dim small">正在贴照片…</p></div>
+      </section>
+    </section>
+
+    <!-- ============ 视图三：路线（规划行程） ============ -->
+    <section class="view" id="view-plan" hidden>
+      <div class="page-head reveal">
+        <h1 class="page-title">路线</h1>
+        <p class="sub">填好需求 → 生成每日行程 → 就地换地点 / 换交通 → 确认后，各点介绍与出行建议写进手记。</p>
+      </div>
+
+      <!-- 快速开始 -->
+      <section class="panel reveal" id="presetPanel">
+        <h2 class="panel-title"><i data-lucide="sparkles" class="ico"></i>快速开始</h2>
+        <p class="sub -mt-1 mb-3">挑一个常见需求，表单会自动填好，再按需要改。</p>
+        <div class="chips" id="presetChips"></div>
+      </section>
+
+      <!-- ① 需求 -->
+      <section class="panel reveal" id="formPanel">
+        <h2 class="panel-title"><i data-lucide="clipboard-list" class="ico"></i>出行需求</h2>
+        <form id="planForm">
+          <!-- 规划方式：直接填表是 explicit；从目的地那边点"就它了"进来会变成 discover -->
+          <input type="hidden" id="mode" value="explicit">
+
+          <fieldset>
+            <legend>行程日期</legend>
+            <div class="grid">
+              <div class="field"><label for="tripStart">出发日期</label>
+                <input type="date" id="tripStart" required></div>
+              <div class="field"><label for="tripEnd">返回日期</label>
+                <input type="date" id="tripEnd" required></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>出行人</legend>
+            <div class="grid">
+              <div class="field"><label for="adults">大人</label>
+                <input type="number" id="adults" min="1" value="2" required></div>
+              <div class="field"><label for="children">儿童</label>
+                <input type="number" id="children" min="0" value="0" required></div>
+              <div class="field"><label for="departureCity">出发城市</label>
+                <input type="text" id="departureCity" placeholder="如：杭州" required></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>目的地</legend>
+            <div class="grid">
+              <div class="field"><label for="province">省份</label>
+                <input type="text" id="province" placeholder="如：云南" required></div>
+              <div class="field"><label for="city">城市</label>
+                <input type="text" id="city" placeholder="如：大理" required></div>
+              <div class="field"><label for="centerPlace">中心地点（选填）</label>
+                <input type="text" id="centerPlace" placeholder="如：大理古城"></div>
+              <div class="field"><label for="mustVisit">必去地点（选填）</label>
+                <input type="text" id="mustVisit" placeholder="逗号分隔，如：洱海, 大理古城"></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>交通与预算</legend>
+            <div class="grid">
+              <div class="field"><label for="isSelfDriving">是否自驾</label>
+                <select id="isSelfDriving" required>
+                  <option value="false">不自驾</option>
+                  <option value="true">自驾</option>
+                </select></div>
+              <div class="field"><label for="budgetTier">预算档（选填）</label>
+                <select id="budgetTier">
+                  <option value="">不限</option>
+                  <option value="low">经济</option>
+                  <option value="mid">中等</option>
+                  <option value="high">舒适</option>
+                </select></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>偏好</legend>
+            <div class="field mb-4">
+              <label>想要的主题</label>
+              <div class="chips" id="themeChips"></div>
+            </div>
+            <div class="field">
+              <label>想避开</label>
+              <div class="chips" id="avoidChips"></div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>补充说明</legend>
+            <textarea id="remarks" rows="3" placeholder="如：带老人，节奏放慢；不吃辣"></textarea>
+          </fieldset>
+
+          <!-- 边填边算的需求概要 -->
+          <div class="summary-strip" id="summaryStrip"></div>
+
+          <div class="actions">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              <i data-lucide="feather" class="ico"></i>生成行程
+            </button>
+            <span class="dim small">一般十几秒到半分钟，页面会显示进度</span>
+          </div>
+          <div class="notice bad" id="formError" hidden></div>
+        </form>
+      </section>
+
+      <!-- ② 进度 -->
+      <section class="panel reveal" id="progressPanel" hidden>
+        <h2 class="panel-title" id="progressTitle">正在规划…</h2>
+
+        <!-- 手账风格的加载态：罗盘在转 + 纸飞机沿虚线飞 + 四步进度 + 秒表 -->
+        <div class="loader" id="loader">
+          <div class="loader-compass" aria-hidden="true"><i data-lucide="compass" class="ico"></i></div>
+          <div class="loader-track" aria-hidden="true">
+            <span class="loader-plane"><i data-lucide="send" class="ico"></i></span>
+          </div>
+          <ol class="loader-steps" id="progressSteps">
+            <li data-step="searching">翻资料</li>
+            <li data-step="drafting">排行程</li>
+            <li data-step="validating">做检查</li>
+            <li data-step="revising">再调整</li>
+          </ol>
+          <p class="loader-clock" id="progressClock">已用 0 秒</p>
+        </div>
+
+        <ol class="progress" id="progressList"></ol>
+        <div class="notice warn" id="progressError" hidden></div>
+      </section>
+
+      <!-- ③ 行程 -->
+      <section class="panel reveal" id="tripPanel" hidden>
+        <div class="trip-head">
+          <h2 class="panel-title" id="tripTitle">行程</h2>
+          <p class="sub" id="tripDest"></p>
+          <div class="badges" id="tripBadges"></div>
+          <div id="tripIssues"></div>
+          <div id="tripNotes"></div>
+        </div>
+        <div id="tripIntercity"></div>
+        <div id="tripLodging"></div>
+        <div id="tripDays"></div>
+
+        <div class="actions mt-6">
+          <button type="button" class="btn btn-primary" id="confirmBtn">
+            <i data-lucide="stamp" class="ico"></i>确认行程
+          </button>
+          <span class="dim small">换地点 / 换交通是本地切换不发请求；确认后由 AI 写各点介绍与出行建议，等几秒</span>
+        </div>
+        <div class="notice bad" id="confirmError" hidden></div>
+
+        <details class="appendix"><summary>提交给后端的决策表（只含我改过的节点）</summary>
+          <pre id="decisionsRaw">（还没确认）</pre></details>
+        <details class="appendix"><summary>后端返回的行程 JSON</summary>
+          <pre id="tripRaw"></pre></details>
+      </section>
+
+      <!-- ④ 确认结果 -->
+      <section class="panel reveal" id="confirmPanel" hidden>
+        <h2 class="panel-title"><i data-lucide="book-heart" class="ico"></i>确认结果 · 各点介绍与出行建议</h2>
+        <div id="introList"></div>
+        <div id="tipList"></div>
+        <details class="appendix"><summary>后端返回的确认 JSON</summary>
+          <pre id="confirmRaw"></pre></details>
+      </section>
+    </section>
+
+    <!-- ============ 视图四：手记（历史旅游方案） ============ -->
+    <section class="view" id="view-history" hidden>
+      <div class="page-head reveal">
+        <h1 class="page-title">手记</h1>
+        <p class="sub">你确认过的行程都贴在这里，点开可以看完整的那一版。</p>
+      </div>
+
+      <section class="panel reveal" id="historyListPanel">
+        <div class="notice bad" id="historyError" hidden></div>
+        <div id="historyList"><p class="dim small">正在读…</p></div>
+      </section>
+
+      <section class="panel reveal" id="historyDetailPanel" hidden>
+        <div class="trip-head">
+          <h2 class="panel-title" id="historyTitle">历史方案</h2>
+          <p class="sub" id="historyMeta"></p>
+          <div class="badges" id="historyBadges"></div>
+          <div id="historyIssues"></div>
+          <div id="historyNotes"></div>
+        </div>
+        <div id="historyIntercity"></div>
+        <div id="historyLodging"></div>
+        <div id="historyDays"></div>
+        <div class="actions mt-6">
+          <button type="button" class="btn" id="historyBack">
+            <i data-lucide="arrow-left" class="ico"></i>返回列表
+          </button>
+          <span class="dim small">这是存下来的那一版，不能在这里改</span>
+        </div>
+      </section>
+    </section>
+
+  </main>
+
+  <!-- ==================== 页脚 ==================== -->
+  <footer class="footer">
+    <div class="tape tape-c" aria-hidden="true"></div>
+    <div class="grid gap-6 sm:grid-cols-3">
+      <div>
+        <h3>这本手账里的数从哪来</h3>
+        <ul>
+          <li>天气：open-meteo</li>
+          <li>酒店：RollingGo（含每晚价与预订链接）</li>
+          <li>火车：12306-MCP　打车：高德</li>
+          <li>航班：Aviationstack（只给实时班次）</li>
+          <li>攻略：本地向量库 22 篇（示例语料）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>如实说明</h3>
+        <ul>
+          <li>大交通的时刻与班次未跟车站 / 机场核对</li>
+          <li>机票票价没有可靠来源，一律不显示金额</li>
+          <li>攻略语料为演示用，出行前请以官方公告为准</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Travele</h3>
+        <p class="foot-note">一个把"行程规划"做成手账的小项目：后端备事实，模型只写字。<br>
+          后端没起来的话，页面上的目录和进度都读不到。</p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="app.js?v=3"></script>
+</body>
+</html>

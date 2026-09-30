@@ -1,0 +1,506 @@
+/* ==========================================================================
+   Travele 前端样式（第二版：旧地图旅行手账）
+
+   布局与配色主要用 Tailwind（CDN，写在 index.html 的 class 上）；
+   这里只放"质感"和"动效"：纸张、胶带、宝丽来、印章、旧地图、手写字体、滚动出现。
+
+   配色：牛皮纸黄 kraft / 墨绿 moss / 砖红 brick / 褪色蓝 faded
+   字体：Ma Shan Zheng（大标题手写）/ ZCOOL XiaoWei（小标题）/ Noto Serif SC（正文）
+   ========================================================================== */
+
+:root{
+  --kraft-50:#fbf6ea;  --kraft-100:#f6ecd6; --kraft-200:#eddfc0; --kraft-300:#e0caa0; --kraft-400:#cfae7b;
+  --moss-500:#45604a;  --moss-600:#3a5140;  --moss-700:#2c3f33;  --moss-800:#1f2d24;
+  --brick-500:#a84e35; --brick-600:#8d3f2b; --brick-700:#6f3222;
+  --faded-500:#68839c; --faded-600:#4f6a82;
+  --ink-400:#6b6152;   --ink-500:#544c40;   --ink-600:#3f3931;   --ink-700:#2e2a24;
+  --line:rgba(110,92,58,.28);
+  /* 纸纹：SVG 湍流噪声（内联，不依赖外部图片） */
+  --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.5'/></svg>");
+  /* 旧地图等高线 */
+  --contour:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><g fill='none' stroke='%23ffffff' stroke-opacity='0.15' stroke-width='1'><ellipse cx='80' cy='90' rx='70' ry='46'/><ellipse cx='80' cy='90' rx='52' ry='32'/><ellipse cx='80' cy='90' rx='34' ry='19'/><ellipse cx='200' cy='200' rx='60' ry='38'/><ellipse cx='200' cy='200' rx='42' ry='24'/></g></svg>");
+}
+
+/* ---------------------------------------------------------------- 基础 */
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{font-family:"Noto Serif SC",serif;color:var(--ink-700);line-height:1.7;
+     -webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+::selection{background:rgba(168,78,53,.2)}
+*{scrollbar-width:thin;scrollbar-color:rgba(90,74,44,.35) transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:rgba(90,74,44,.3);border:3px solid transparent;
+  background-clip:content-box;border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:rgba(90,74,44,.5);background-clip:content-box}
+
+/* 桌面：墨绿旧地图 + 暗角，本子摊在上面 */
+.desk{
+  min-height:100vh;padding:26px 14px 60px;
+  background-color:var(--moss-700);
+  background-image:
+    var(--contour),
+    radial-gradient(120% 90% at 50% 0%, rgba(255,255,255,.10), transparent 60%),
+    radial-gradient(90% 70% at 50% 110%, rgba(0,0,0,.45), transparent 70%),
+    linear-gradient(160deg,#2c3f33,#1f2d24 60%,#26362c);
+  background-size:520px 520px, auto, auto, auto;
+}
+
+/* 手账本体：牛皮纸 + 格线 + 装订线（整本轻微旋转，像摊在桌上） */
+.notebook{
+  position:relative;max-width:1120px;margin:0 auto;padding-left:8px;
+  background-color:var(--kraft-100);
+  background-image:
+    var(--noise),
+    repeating-linear-gradient(180deg, transparent 0 30px, rgba(120,100,60,.10) 30px 31px),
+    radial-gradient(80% 60% at 15% 8%, rgba(255,255,255,.55), transparent 60%),
+    linear-gradient(180deg, rgba(207,174,123,.22), transparent 30%);
+  background-size:160px 160px, auto, auto, auto;
+  border-radius:3px;
+  box-shadow:0 26px 60px rgba(12,18,14,.5), 0 1px 0 rgba(255,255,255,.5) inset,
+             0 0 0 1px rgba(120,100,60,.28) inset;
+  transform:rotate(-.25deg);
+}
+.spine{
+  position:absolute;left:22px;top:10px;bottom:10px;width:2px;
+  background:repeating-linear-gradient(180deg, rgba(110,92,58,.55) 0 13px, transparent 13px 27px);
+}
+
+/* 手写图标（Lucide 会把 <i data-lucide> 换成 svg，类名一起带过去） */
+.ico,svg.lucide{width:1.05em;height:1.05em;stroke-width:1.8;flex:none;vertical-align:-.16em}
+
+/* ---------------------------------------------------------------- 胶带 */
+.tape{
+  position:absolute;width:132px;height:30px;border-radius:2px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.22) 0 2px, transparent 2px 5px),
+    linear-gradient(180deg, rgba(236,220,175,.92), rgba(219,199,150,.82));
+  box-shadow:0 2px 6px rgba(60,50,30,.22), 0 0 0 1px rgba(150,128,86,.35) inset;
+  clip-path:polygon(2% 6%, 6% 0, 96% 3%, 100% 2%, 98% 96%, 94% 100%, 4% 97%, 0 100%);
+  animation:tapeFloat 7s ease-in-out infinite alternate;
+}
+.tape-a{top:-14px;left:64px;transform:rotate(-6deg)}
+.tape-b{top:-10px;right:96px;transform:rotate(4.5deg);animation-delay:-2.2s}
+.tape-c{top:-15px;left:50%;margin-left:-70px;transform:rotate(-2deg);animation-delay:-4s}
+
+/* ---------------------------------------------------------------- 抬头与印章 */
+.brand-mark{
+  display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(180deg,var(--moss-500),var(--moss-700));color:var(--kraft-100);
+  box-shadow:0 3px 0 var(--moss-800), 0 6px 14px rgba(31,45,36,.35);font-size:19px;
+}
+.stamp{
+  display:inline-block;padding:4px 12px;border:2px solid rgba(168,78,53,.7);border-radius:5px;
+  color:var(--brick-600);font-family:"ZCOOL XiaoWei",serif;font-size:12.5px;letter-spacing:.16em;
+  box-shadow:0 0 0 1px rgba(168,78,53,.28) inset;opacity:.92;white-space:nowrap;
+}
+.stamp-quiet{border-color:rgba(104,131,156,.65);color:var(--faded-600)}
+.stamp-ok{border-color:rgba(58,81,64,.7);color:var(--moss-600)}
+.stamp-bad{border-color:rgba(168,78,53,.8);color:var(--brick-600)}
+
+/* 索引标签：像本子边上的分类纸标签 */
+.tabs{border-bottom:1.5px solid rgba(120,100,60,.4)}
+.tab{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 18px 10px;border:1px solid rgba(150,128,86,.6);border-bottom:none;
+  border-radius:11px 11px 0 0;background:linear-gradient(180deg,#e6d5b0,#dcc79b);
+  color:var(--ink-500);font-family:"ZCOOL XiaoWei",serif;font-size:15px;letter-spacing:.08em;
+  cursor:pointer;transition:transform .25s ease, background .25s ease, color .25s ease;
+}
+.tab:hover{transform:translateY(-2px);background:linear-gradient(180deg,#efe0c2,#e3d0a8)}
+.tab.on{
+  background:var(--kraft-50);color:var(--moss-700);transform:translateY(2px) rotate(-.7deg);
+  box-shadow:0 -1px 0 var(--kraft-50), 0 8px 16px rgba(60,50,30,.16);
+}
+.tab.on .ico{color:var(--brick-500)}
+
+/* ---------------------------------------------------------------- 首页封面 */
+.cover{position:relative;padding:26px 8px 6px;text-align:center}
+.kicker{font-family:"ZCOOL XiaoWei",serif;font-size:13px;letter-spacing:.42em;color:var(--faded-600);margin:0 0 6px}
+.cover-title{
+  margin:6px 0 14px;font-family:"Ma Shan Zheng",cursive;font-weight:400;
+  font-size:clamp(38px,6.6vw,68px);line-height:1.15;color:var(--moss-700);
+  text-shadow:1px 1px 0 rgba(255,255,255,.65), 3px 4px 0 rgba(168,78,53,.14);
+}
+.cover-title::after{
+  content:"";display:block;width:190px;height:8px;margin:10px auto 0;
+  background:radial-gradient(closest-side, rgba(168,78,53,.55), transparent 72%);
+}
+.cover-sub{margin:0 auto;max-width:660px;color:var(--ink-500);font-size:15.5px}
+.cover .actions{margin-top:20px}
+.page-head{margin-bottom:14px}
+.page-title{
+  margin:0;font-family:"Ma Shan Zheng",cursive;font-weight:400;font-size:34px;color:var(--moss-700);
+  text-shadow:1px 1px 0 rgba(255,255,255,.6);
+}
+.section-title{
+  display:flex;align-items:center;gap:8px;margin:0 0 8px;
+  font-family:"ZCOOL XiaoWei",serif;font-size:18px;color:var(--moss-600);letter-spacing:.06em;
+}
+.sub{margin:4px 0 0;color:var(--ink-500);font-size:14.5px}
+.dim{color:var(--ink-400)}
+.small{font-size:13px}
+.plain{margin:6px 0 0;padding-left:18px}
+.plain li{margin:4px 0}
+
+/* 便签式的"怎么用" */
+.note-list{
+  list-style:none;margin:0;padding:14px 18px;display:grid;gap:8px;
+  background:rgba(255,255,255,.5);border:1px dashed rgba(110,92,58,.5);border-radius:6px;
+  transform:rotate(-.3deg);box-shadow:0 6px 14px rgba(60,50,30,.1);
+}
+.note-list li{display:flex;gap:10px;align-items:baseline;font-size:14.5px;color:var(--ink-600)}
+.note-list span{font-family:"Ma Shan Zheng",cursive;font-size:20px;color:var(--brick-500)}
+
+/* ---------------------------------------------------------------- 宝丽来与照片墙 */
+.polaroid{
+  position:relative;background:#fffdf6;padding:13px 13px 0;border:1px solid rgba(150,128,86,.45);
+  border-radius:3px;box-shadow:0 12px 24px rgba(58,47,28,.2), 0 1px 0 rgba(255,255,255,.8) inset;
+  transform:rotate(-1.1deg);transition:transform .35s ease, box-shadow .35s ease;
+}
+.polaroid:hover{transform:rotate(0deg) translateY(-4px);box-shadow:0 18px 34px rgba(58,47,28,.26)}
+.polaroid-hero{max-width:620px;margin:6px auto 0;transform:rotate(.8deg)}
+.polaroid-hero:hover{transform:rotate(0deg) translateY(-3px)}
+.photo{
+  position:relative;aspect-ratio:4/3;overflow:hidden;border-radius:2px;
+  /* --tint 由 app.js 按地名算（同一地名每次一样），没有就用默认的牛皮纸 */
+  background-image:var(--noise), var(--contour),
+                   var(--tint, linear-gradient(150deg,#d9c69a,#b9a271));
+  background-size:160px 160px, 380px 380px, auto;
+  background-blend-mode:soft-light, soft-light, normal;
+  filter:saturate(.88) contrast(.96);
+}
+.photo::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(70% 60% at 50% 40%, transparent 45%, rgba(60,50,30,.22))}
+/* 真照片（Travele/P 里的图，后端挂在 /photos/）：铺满相框 + 压一点饱和，像夹在册子里的旧相片。
+   没有图时这个元素不出现，露出的就是上面的 --tint 手绘底色。 */
+.photo-img{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;
+  filter:saturate(.92) contrast(.98) sepia(.06)}
+.photo-img-hero{filter:saturate(.96) sepia(.04)}
+.photo-eyebrow{
+  position:absolute;left:14px;top:12px;z-index:1;padding:2px 10px;border-radius:999px;
+  background:rgba(251,246,234,.82);color:var(--moss-600);font-size:12.5px;letter-spacing:.1em;
+}
+.photo-name{
+  position:absolute;left:0;right:0;bottom:12px;z-index:1;margin:0;text-align:center;
+  font-family:"Ma Shan Zheng",cursive;font-weight:400;font-size:clamp(26px,4.4vw,42px);
+  color:#fbf6ea;text-shadow:0 2px 10px rgba(31,45,36,.6), 0 1px 0 rgba(31,45,36,.5);
+}
+.polaroid-caption{padding:12px 6px 16px}
+.photo-desc{margin:6px 0 0;color:var(--ink-600);font-size:14.5px}
+.counter{margin-top:8px;font-family:"ZCOOL XiaoWei",serif;font-size:12.5px;letter-spacing:.12em;color:var(--faded-600)}
+
+.wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:20px 16px}
+.wall .polaroid{padding:9px 9px 0;cursor:pointer}
+.wall .polaroid .photo{aspect-ratio:1/1}
+.wall .photo-name{
+  position:static;text-align:left;padding:9px 3px 0;color:var(--ink-700);
+  font-size:19px;text-shadow:none;line-height:1.3;
+}
+.wall-meta{display:block;padding:0 3px 11px;font-size:12px;color:var(--ink-400);line-height:1.5}
+
+/* ---------------------------------------------------------------- 按钮 */
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:16px}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;padding:9px 17px;cursor:pointer;
+  border:1.5px solid rgba(110,92,58,.55);border-radius:8px;color:var(--ink-600);
+  background:linear-gradient(180deg,#f4e9d3,#e7d7b5);font-family:"ZCOOL XiaoWei",serif;
+  font-size:15px;letter-spacing:.06em;
+  box-shadow:0 2px 0 rgba(120,100,60,.42), 0 7px 16px rgba(60,50,30,.14);
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn:hover{transform:translateY(-1px) rotate(-.4deg)}
+.btn:active{transform:translateY(1px);box-shadow:0 1px 0 rgba(120,100,60,.45)}
+.btn:focus-visible{outline:2px dashed rgba(168,78,53,.6);outline-offset:2px}
+.btn-primary{
+  background:linear-gradient(180deg,#b45a3f,#8d3f2b);border-color:var(--brick-700);color:var(--kraft-50);
+  box-shadow:0 3px 0 var(--brick-700), 0 10px 20px rgba(111,50,34,.3);
+}
+.btn-primary:hover{background:linear-gradient(180deg,#c06346,#96452f)}
+.btn-quiet{background:transparent;border-style:dashed}
+.btn:disabled{opacity:.5;cursor:progress;transform:none}
+
+/* ---------------------------------------------------------------- 纸页面板 */
+.panel{
+  position:relative;margin:16px 0;padding:18px 20px;border:1px solid rgba(150,128,86,.5);border-radius:6px;
+  background:rgba(255,255,255,.52);
+  box-shadow:0 10px 22px rgba(60,50,30,.12), 0 1px 0 rgba(255,255,255,.7) inset;
+}
+.panel::before{
+  content:"";position:absolute;top:-11px;left:26px;width:96px;height:22px;transform:rotate(-3.4deg);
+  background:linear-gradient(180deg, rgba(236,220,175,.9), rgba(219,199,150,.78));
+  box-shadow:0 2px 5px rgba(60,50,30,.18);
+  clip-path:polygon(2% 8%, 8% 0, 96% 4%, 100% 0, 98% 94%, 92% 100%, 5% 96%, 0 100%);
+  animation:tapeFloat 8s ease-in-out infinite alternate;
+}
+.panel-title{
+  display:flex;align-items:center;gap:8px;margin:0 0 10px;
+  font-family:"ZCOOL XiaoWei",serif;font-size:19px;color:var(--moss-700);letter-spacing:.06em;
+}
+.trip-head{display:grid;gap:4px}
+
+/* ---------------------------------------------------------------- 表单（手写填空） */
+fieldset{border:none;border-top:1px dashed var(--line);margin:16px 0 0;padding:12px 0 2px}
+legend{font-family:"ZCOOL XiaoWei",serif;font-size:15px;color:var(--moss-600);letter-spacing:.1em;padding:0 8px 0 0}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.field{display:grid;gap:5px}
+.field label{font-size:13.5px;color:var(--ink-500);letter-spacing:.04em}
+input,select,textarea{
+  width:100%;padding:7px 4px;color:var(--ink-700);font-family:"Noto Serif SC",serif;font-size:15px;
+  background:transparent;border:none;border-bottom:1.5px dashed rgba(110,92,58,.6);border-radius:0;
+  transition:border-color .2s ease, background .2s ease;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-bottom-color:var(--brick-500);background:rgba(255,255,255,.5)}
+textarea{border:1.5px dashed rgba(110,92,58,.5);border-radius:6px;padding:10px;background:rgba(255,255,255,.35);resize:vertical}
+select{cursor:pointer}
+input[type=checkbox]{width:auto;accent-color:var(--moss-600)}
+
+/* 主题/避开的标签：像贴上去的小纸片 */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips label,.chip{
+  position:relative;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;cursor:pointer;
+  border:1px solid rgba(110,92,58,.45);border-radius:999px;background:rgba(255,255,255,.55);
+  font-size:13.5px;color:var(--ink-600);transition:transform .2s ease, background .2s ease;
+  font-family:"Noto Serif SC",serif;
+}
+.chips label:hover,.chip:hover{transform:translateY(-1px) rotate(-.6deg);background:#fff}
+.chips label:has(input:checked){
+  background:linear-gradient(180deg,#e9f0e6,#d9e6dc);border-color:var(--moss-500);color:var(--moss-700);
+}
+.chips input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+
+/* 边填边算的概要 */
+.summary-strip{
+  display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0;padding:11px 13px;border-radius:6px;
+  background:repeating-linear-gradient(180deg, rgba(255,255,255,.5) 0 27px, rgba(120,100,60,.1) 27px 28px);
+  border:1px dashed rgba(110,92,58,.45);
+}
+.kv-item{
+  font-size:13px;color:var(--ink-600);padding:2px 9px;border-radius:999px;
+  background:rgba(251,246,234,.9);border:1px solid rgba(110,92,58,.3);
+}
+
+/* ---------------------------------------------------------------- 进度（像在纸上写字） */
+.progress{list-style:none;margin:6px 0 0;padding:0}
+.progress li{
+  display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--line);
+  font-size:14.5px;color:var(--ink-600);
+}
+.ptag{
+  flex:none;min-width:58px;text-align:center;font-size:12px;padding:2px 8px;border-radius:999px;
+  border:1px solid rgba(110,92,58,.45);background:rgba(255,255,255,.6);font-family:"ZCOOL XiaoWei",serif;
+}
+.p-done .ptag{background:var(--moss-600);color:var(--kraft-100);border-color:var(--moss-700)}
+.p-failed .ptag{background:var(--brick-600);color:var(--kraft-50);border-color:var(--brick-700)}
+.p-revising .ptag{background:#e6d5b0}
+
+/* ---------------------------------------------------------------- 加载态（手账里的罗盘与纸飞机） */
+.loader{
+  display:grid;gap:12px;justify-items:center;margin:6px 0 14px;padding:18px 14px 12px;
+  border:1px dashed rgba(110,92,58,.45);border-radius:8px;
+  background:
+    repeating-linear-gradient(180deg, rgba(255,255,255,.45) 0 27px, rgba(120,100,60,.1) 27px 28px);
+}
+.loader-compass{
+  width:54px;height:54px;display:grid;place-items:center;border-radius:50%;
+  border:2px solid rgba(168,78,53,.55);color:var(--brick-500);font-size:26px;
+  background:radial-gradient(circle at 50% 35%, #fbf6ea, #eddfc0);
+  box-shadow:0 4px 10px rgba(60,50,30,.16), 0 0 0 4px rgba(168,78,53,.08) inset;
+  animation:compassSpin 6s linear infinite;
+}
+.loader-track{
+  position:relative;width:min(360px,86%);height:26px;
+  background-image:repeating-linear-gradient(90deg, rgba(110,92,58,.55) 0 6px, transparent 6px 14px);
+  background-size:100% 2px;background-position:0 50%;background-repeat:no-repeat;
+}
+.loader-plane{
+  position:absolute;top:-2px;left:0;color:var(--moss-600);font-size:18px;
+  animation:planeFly 3.6s cubic-bezier(.45,.05,.55,.95) infinite;
+}
+.loader-steps{list-style:none;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:0;padding:0}
+.loader-steps li{
+  padding:3px 12px;border-radius:999px;font-size:13px;color:var(--ink-400);
+  border:1px dashed rgba(110,92,58,.45);background:rgba(255,255,255,.45);
+  transition:color .3s ease, background .3s ease, border-color .3s ease, transform .3s ease;
+}
+.loader-steps li.on{
+  color:var(--kraft-50);background:linear-gradient(180deg,#b45a3f,#8d3f2b);border-color:var(--brick-700);
+  transform:translateY(-1px) rotate(-1deg);box-shadow:0 3px 8px rgba(111,50,34,.25);
+  animation:stepPulse 1.6s ease-in-out infinite;
+}
+.loader-steps li.done{color:var(--moss-600);border-color:rgba(58,81,64,.55);background:rgba(58,81,64,.12)}
+.loader-steps li.failed{
+  color:var(--brick-600);border-style:solid;border-color:rgba(168,78,53,.6);background:rgba(168,78,53,.12);
+}
+.loader-clock{margin:0;font-family:"ZCOOL XiaoWei",serif;font-size:13px;letter-spacing:.12em;color:var(--faded-600)}
+.loader.quiet .loader-compass{animation-duration:12s}
+
+@keyframes compassSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes planeFly{
+  0%{left:0;transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-5px) rotate(-4deg)}
+  100%{left:calc(100% - 20px);transform:translateY(0) rotate(0)}
+}
+@keyframes stepPulse{0%,100%{opacity:1}50%{opacity:.72}}
+
+/* ---------------------------------------------------------------- 提示条 */
+.notice{margin-top:14px;padding:11px 14px;border-radius:6px;font-size:14px;border:1px dashed}
+.notice.bad{background:rgba(168,78,53,.1);border-color:rgba(168,78,53,.55);color:var(--brick-700)}
+.notice.warn{background:rgba(207,174,123,.24);border-color:rgba(150,128,86,.6);color:var(--ink-600)}
+/* 后端已经处理掉的说明：比"问题"轻一档，用褪色蓝 */
+.notice.note{background:rgba(104,131,156,.14);border-color:rgba(104,131,156,.5);color:var(--faded-600)}
+.notice ul.plain{margin:8px 0 0}
+
+/* ---------------------------------------------------------------- 行程（一天一页） */
+.leg-block{margin:16px 0}
+.leg-block h3{margin:0 0 8px;font-family:"ZCOOL XiaoWei",serif;font-size:16px;color:var(--moss-600);letter-spacing:.1em}
+.ic-list,.stay-list{list-style:none;margin:0;padding:0}
+.ic-list li,.stay{
+  margin:8px 0;padding:10px 13px;border:1px dashed rgba(110,92,58,.45);border-radius:6px;
+  background:rgba(255,255,255,.48);
+}
+.ic-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.ic-dir{font-family:"Ma Shan Zheng",cursive;font-size:19px;color:var(--brick-500)}
+.ic-route{font-size:15px;color:var(--ink-700)}
+.ic-detail{margin:6px 0 0;font-size:13.5px;color:var(--ink-500)}
+.stay-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.stay-line{margin:4px 0 0;font-size:13.5px;color:var(--ink-500)}
+.stay a{color:var(--faded-600);text-decoration:underline dotted}
+
+.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.badge{
+  display:inline-block;padding:2px 10px;border-radius:999px;font-size:12.5px;letter-spacing:.06em;
+  background:rgba(104,131,156,.16);border:1px solid rgba(104,131,156,.45);color:var(--faded-600);
+}
+.badge.ok{background:rgba(58,81,64,.16);border-color:rgba(58,81,64,.5);color:var(--moss-600)}
+.badge.bad{background:rgba(168,78,53,.14);border-color:rgba(168,78,53,.5);color:var(--brick-600)}
+.badge.agent{background:rgba(168,78,53,.12);border-color:rgba(168,78,53,.45);color:var(--brick-500)}
+
+.day{
+  position:relative;margin:18px 0;padding:15px 16px 6px;border:1px solid rgba(150,128,86,.5);border-radius:6px;
+  background:rgba(255,255,255,.45);box-shadow:0 8px 18px rgba(60,50,30,.1);
+}
+.day::before{
+  content:"";position:absolute;top:-10px;left:22px;width:74px;height:20px;transform:rotate(-4deg);
+  background:linear-gradient(180deg, rgba(236,220,175,.88), rgba(219,199,150,.75));
+  clip-path:polygon(3% 10%, 10% 0, 95% 5%, 100% 0, 97% 92%, 90% 100%, 6% 95%, 0 100%);
+}
+.day-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;padding-bottom:8px;border-bottom:1px dashed var(--line)}
+.day-head b{font-family:"Ma Shan Zheng",cursive;font-weight:400;font-size:23px;color:var(--moss-700)}
+.theme{font-size:12.5px;color:var(--brick-500);border-bottom:1px solid rgba(168,78,53,.5)}
+.segment{margin:12px 0 0;padding-left:12px;border-left:2px dotted rgba(110,92,58,.4)}
+.seg-head{
+  display:inline-block;margin-bottom:6px;padding:1px 10px;border-radius:999px;font-size:12.5px;
+  background:rgba(58,81,64,.14);border:1px solid rgba(58,81,64,.35);color:var(--moss-600);
+}
+.item{margin:6px 0 12px}
+.item-time{font-family:"ZCOOL XiaoWei",serif;font-size:13px;letter-spacing:.1em;color:var(--faded-600)}
+
+/* 候选方案：像一张张可以换的便签 */
+.opt{
+  display:block;width:100%;margin:7px 0;padding:9px 12px;text-align:left;cursor:pointer;
+  border:1px dashed rgba(110,92,58,.5);border-radius:6px;background:rgba(255,255,255,.55);
+  color:var(--ink-700);font-family:"Noto Serif SC",serif;font-size:14.5px;
+  transition:transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.opt:hover:not(:disabled){transform:translateY(-1px) rotate(-.3deg);background:#fff}
+.opt.on{
+  border-style:solid;border-color:var(--brick-500);background:linear-gradient(180deg,#fbf3e2,#f2e4c9);
+  box-shadow:0 0 0 3px rgba(168,78,53,.12);transform:rotate(-.3deg);
+}
+.opt:disabled{cursor:default}
+/* 方案卡：左边一张小照片（没有图就没有这块），右边名字与信息 */
+.opt-row{display:flex;align-items:flex-start;gap:10px}
+.opt-body{display:grid;gap:3px;min-width:0;flex:1}
+.opt-thumb{
+  flex:none;width:56px;height:56px;object-fit:cover;border-radius:4px;
+  border:2px solid #fffdf6;box-shadow:0 3px 8px rgba(58,47,28,.22);
+  filter:saturate(.92) contrast(.98) sepia(.06);
+}
+.opt-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.opt-name{font-family:"ZCOOL XiaoWei",serif;font-size:16px;color:var(--moss-700)}
+.tps{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.tp{
+  padding:4px 11px;cursor:pointer;border-radius:999px;font-size:12.5px;
+  border:1px solid rgba(110,92,58,.5);background:rgba(255,255,255,.6);color:var(--ink-600);
+  font-family:"Noto Serif SC",serif;transition:transform .2s ease, background .2s ease;
+}
+.tp:hover:not(:disabled){transform:translateY(-1px)}
+.tp.on{background:var(--moss-600);border-color:var(--moss-700);color:var(--kraft-100)}
+.combo{margin-top:7px;font-size:13px;color:var(--faded-600)}
+.unverified{margin-top:5px;font-size:12.5px;color:var(--ink-400);font-style:italic}
+.sum{margin-top:7px;padding-top:5px;font-size:12.5px;color:var(--ink-400);border-top:1px dotted rgba(110,92,58,.35)}
+
+/* ---------------------------------------------------------------- 手记列表 */
+/* 各点介绍 / 出行建议：一条一张小纸卡 */
+.diary-list{list-style:none;padding-left:0}
+.diary-list li{
+  margin:8px 0;padding:10px 13px;border:1px dashed rgba(110,92,58,.45);border-radius:6px;
+  background:rgba(255,255,255,.5);font-size:14.5px;color:var(--ink-600);overflow:hidden;
+}
+/* 各点介绍左边那张小照片（浮在左上，正文自动绕开） */
+.diary-thumb{
+  float:left;width:64px;height:64px;margin:0 10px 6px 0;object-fit:cover;border-radius:4px;
+  border:2px solid #fffdf6;box-shadow:0 3px 8px rgba(58,47,28,.22);
+  filter:saturate(.92) contrast(.98) sepia(.06);
+}
+.plan-card{
+  display:grid;gap:3px;width:100%;margin:12px 0;padding:13px 16px;cursor:pointer;text-align:left;
+  border:1px solid rgba(150,128,86,.5);border-radius:6px;background:rgba(255,255,255,.55);
+  box-shadow:0 8px 18px rgba(60,50,30,.1);transform:rotate(-.35deg);
+  transition:transform .25s ease, box-shadow .25s ease;
+}
+.plan-card:nth-child(even){transform:rotate(.4deg)}
+.plan-card:hover{transform:rotate(0deg) translateY(-3px);box-shadow:0 14px 26px rgba(60,50,30,.18)}
+.plan-title{font-family:"Ma Shan Zheng",cursive;font-size:23px;color:var(--moss-700)}
+
+/* ---------------------------------------------------------------- 附录 / 页脚 */
+.appendix{margin-top:14px;border-top:1px dashed rgba(110,92,58,.4);padding-top:10px;font-size:13px;color:var(--ink-500)}
+.appendix summary{cursor:pointer;color:var(--faded-600)}
+.appendix pre{
+  margin:8px 0 0;padding:10px;max-height:320px;overflow:auto;font-size:12px;line-height:1.55;
+  background:rgba(255,255,255,.5);border:1px dashed rgba(110,92,58,.4);border-radius:6px;color:var(--ink-600);
+  font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;
+}
+.footer{
+  position:relative;margin-top:10px;padding:26px 20px 30px;border-top:1.5px dashed rgba(120,100,60,.5);
+  background:linear-gradient(180deg, rgba(207,174,123,.16), rgba(207,174,123,.05));
+}
+.footer h3{margin:0 0 8px;font-family:"ZCOOL XiaoWei",serif;font-size:15px;color:var(--moss-600);letter-spacing:.1em}
+.footer ul{margin:0;padding-left:16px;font-size:13px;color:var(--ink-500)}
+.footer li{margin:3px 0}
+.foot-note{margin:0;font-size:13px;color:var(--ink-500)}
+
+/* ---------------------------------------------------------------- 动效 */
+@keyframes tapeFloat{
+  from{transform:translateY(0) rotate(-4deg)}
+  to{transform:translateY(-4px) rotate(-1.5deg)}
+}
+@keyframes inkIn{
+  from{opacity:0;transform:translateY(4px)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .progress li{animation:inkIn .45s ease both}
+}
+.reveal{opacity:0;transform:translateY(16px) rotate(.25deg);
+        transition:opacity .6s ease, transform .7s cubic-bezier(.2,.75,.2,1)}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .tape,.panel::before{animation:none !important}
+  .reveal{opacity:1;transform:none;transition:none}
+  .loader-compass,.loader-plane,.loader-steps li.on{animation:none !important}
+  .loader-plane{left:calc(50% - 10px)}      /* 不动就摆中间，别停在起点看着像卡住 */
+}
+
+/* ---------------------------------------------------------------- 窄屏 */
+@media (max-width:640px){
+  .desk{padding:14px 8px 40px}
+  .notebook{padding-left:2px}
+  .spine{display:none}
+  .tab{padding:7px 12px;font-size:14px}
+  .cover{padding-top:16px}
+  .panel{padding:15px 14px}
+  .wall{grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:14px 12px}
+  .actions .btn{flex:1 1 auto;justify-content:center}
+}
